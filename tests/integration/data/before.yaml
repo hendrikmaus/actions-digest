@@ -1,0 +1,46 @@
+---
+name: Test
+
+'on':
+  pull_request: ~
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: already resolved -> nothing to do
+        uses: hendrikmaus/dummy-action@c0077f5d7b6875d22bb5424412019ad4df84488c # v2.1.0
+
+      - name: full tag name -> resolve to commit sha
+        uses: hendrikmaus/dummy-action@2.1.0
+
+      - name: full tag name (older tag) -> resolve to commit sha
+        uses: hendrikmaus/dummy-action@2.0.0
+
+      - name: partial tag name -> resolve to latest 2.x commit sha
+        uses: hendrikmaus/dummy-action@2
+
+      - name: branch -> resolve to tip of branch
+        uses: hendrikmaus/dummy-action@main
+
+      - name: invalid version -> untouched, error logged
+        uses: hendrikmaus/dummy-action@INVALID
+
+      - name: additional comment on the end of the line
+        uses: hendrikmaus/dummy-action@2 # I am comment, and I am here to stay
+
+      - name: quoted with single quotes
+        uses: 'hendrikmaus/dummy-action@1'
+
+      - name: quoted with double quotes
+        uses: "hendrikmaus/dummy-action@1"
+
+      - name: the yaml key is now also quoted
+        "uses": "hendrikmaus/dummy-action@1"
+
+      - uses: hendrikmaus/dummy-action@2.0
+        name: here uses is the first element
