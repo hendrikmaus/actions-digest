@@ -1,0 +1,42 @@
+# docs: https://github.com/casey/just
+# tmpl: https://github.com/hendrikmaus/justfile-template
+
+set export := true
+set dotenv-load := false
+
+# call 'just' to get help
+@_default:
+  just --list --unsorted
+  echo ""
+  echo "Available variables:"
+  just --evaluate | sed 's/^/    /'
+  echo ""
+  echo "Override variables using 'just key=value ...' (also ALL_UPPERCASE ones)"
+
+# Variables
+# ---------
+
+# Recipes
+# -------
+
+# test the program
+test:
+  #!/usr/bin/env bash
+  set -euo pipefail
+
+  function cleanup() {
+    rm actual.yaml
+  }
+  trap cleanup EXIT
+
+  ./gha-digest before.yaml > actual.yaml
+
+  echo ""
+  echo "---"
+
+  if diff after.yaml actual.yaml; then
+    echo "test passed"
+  else
+    echo "test failed"
+    exit 1
+  fi

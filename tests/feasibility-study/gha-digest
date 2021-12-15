@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ -v VERBOSE ]] && set -x
+
+## *********************************
+## * DO NOT USE THIS IN PRODUCTION *
+## *********************************
+##
+## Digest GitHub Action steps from <action-name>@<tag> to <latest-tags-commit-sha>
+##
+## For Example:
+##   actions/checkout@v2 -> actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+##
+## Usage:
+##   ./gha-digest <path-to-workflow-file> > <path-to-output-file>
+##
+## The program prints the modified workflow file to `stdout`.
+## Any resolved action is logged to `stderr` for reference.
+##
+## Please mind that this script does not cover edge cases and was only
+## created for a case-study on feasibility. This is by no means considered
+## a holistic program and is NOT TO BE USED IN PRODUCTION.
+##
+## Source: https://github.com/hendrikmaus/github-actions-step-digest
+## Author: Hendrik Maus <aidentailor@gmail.com>
+##
+
+# Find 'use: ' statements in a given file and populate an array
+#
+# Usage:
+#   find_uses <array-to-populate> <path-to-file>
+#
+function find_uses {
+  local -n res="${1}"
+  local target="${2}"
+  # read result into array
+  #   grep for lines that start with a pattern
+  #   get the second column of the output
+  #   remove any single or double quotes around the entries
+  #   remove any duplicates
+  # ... not handling any more cases for the sake of simplicity
+  readarray -d '' -t res < <(grep -iE '^?uses: ' "${target}" | awk '{print $2}' | tr -d "'\"" | sort | uniq)
+}
+
+# Get the commit sha of the latest tag in a given owner/repository on GitHub.
+# Returns the 40 character commit sha without trailing linebreak.
+#
+# Usage:
+#   latest_tag_sha "<owner>/<repository>"
+#
+function latest_tag_sha {
+  local repository="${1}"
+  curl -s "https://api.github.com/repos/${repository}/tags?per_page=1" | jq -j '.[].commit.sha'
+}
+
+# Digest all used github actions from their tagged variant to a commit sha
+# Prints the processed workflow to stdout; prints resolved items to stderr.
+#
+# Usage:
+#   run <path-to-workflow-file>
+#
+function run {
+  local target="${1}"
+
+  local uses
+  find_uses uses "${target}" # mutates `uses` variable
+
+  echo "Found actions:" >&2
+  echo "${uses}" >&2
+
+  local workflow # mutated in every loop iteration below
+  workflow=$(cat "${target}")
+
+  echo "Resolving:" >&2
+
+  for item in ${uses}; do
+    local repository version
+    IFS='@' read -r repository version <<< "${item}"
+
+    if [[ $(echo -n "${version}" | wc -m) == 40 ]]; then
+      # let's just assume that a 40 char version is already a commit sha
+      # ... for the sake of simplicity
+      continue
+    fi
+
+    local commit_sha
+    commit_sha=$(latest_tag_sha "${repository}" )
+
+    local resolved_item
+    resolved_item="${repository}@${commit_sha}"
+
+    echo "${item} -> ${resolved_item}" >&2
+    workflow=$(echo -n "${workflow}" | sed "s#\<${item}\>#${resolved_item}#")
+  done
+
+  echo "${workflow}"
+}
+
+# Program main function
+#
+function main {
+  local target="${1:-}"
+  run "${target}"
+}
+
+main "$@"

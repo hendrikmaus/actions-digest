@@ -1,0 +1,29 @@
+---
+name: Test
+
+'on':
+  pull_request: ~
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: short-tag
+        uses: hendrikmaus/dummy-action@c0077f5d7b6875d22bb5424412019ad4df84488c
+
+      - name: already resolved
+        uses: hendrikmaus/dummy-action@c0077f5d7b6875d22bb5424412019ad4df84488c
+
+      - name: additional comment on the end of the line
+        uses: hendrikmaus/dummy-action@c0077f5d7b6875d22bb5424412019ad4df84488c # I am comment, and I will stay here!
+
+      - name: quoted with single quotes
+        uses: 'hendrikmaus/dummy-action@c0077f5d7b6875d22bb5424412019ad4df84488c'
+
+      - name: quoted with double quotes
+        uses: "hendrikmaus/dummy-action@c0077f5d7b6875d22bb5424412019ad4df84488c"
