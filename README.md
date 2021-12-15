@@ -50,5 +50,8 @@ Actions digest is written in Rust. If you have its toolchain installed, you can 
 cargo install --git 'https://github.com/hendrikmaus/actions-digest'
 ```
 
-
 _To uninstall, use `cargo uninstall <name>`._
+
+## License
+
+This project is released under the terms of the [MIT](https://opensource.org/licenses/MIT) license.
