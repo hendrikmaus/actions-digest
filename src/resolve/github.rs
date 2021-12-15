@@ -96,7 +96,7 @@ impl GitHub {
 
         match reference.object.obj_type.as_str() {
             "commit" | "tag" => return Ok(Some(reference.object.sha.clone())),
-            _ => Ok(None)
+            _ => Ok(None),
         }
     }
 }
