@@ -1,0 +1,26 @@
+[package]
+name = "actions-digest"
+description = "Resolve GitHub Action steps from git-ref to commit-sha"
+authors = ["Hendrik Maus <aidentailor@gmail.com>"]
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1"
+lazy_static = "1"
+paw = "1"
+rayon = "1"
+regex = "1"
+reqwest = { version = "0.11", features = ["blocking", "json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+structopt = { version = "0.3", features = ["paw"] }
+thiserror = "1"
+
+[dev-dependencies]
+assert_cmd = "1"
+predicates = "1"
+pretty_assertions = "0.7"
+rstest = "0.12"
