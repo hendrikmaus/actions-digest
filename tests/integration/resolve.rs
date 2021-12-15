@@ -1,6 +1,6 @@
+use assert_cmd::prelude::*;
 use std::fs::read_to_string;
 use std::process::Command;
-use assert_cmd::prelude::*;
 
 const BASE_DIR: &str = "tests/integration";
 
@@ -11,10 +11,7 @@ fn process_workflow() -> anyhow::Result<()> {
     let before = format!("{}/data/before.yaml", BASE_DIR);
     let after = read_to_string(&format!("{}/data/after.yaml", BASE_DIR))?;
 
-    cmd.arg(&before)
-        .assert()
-        .success()
-        .stdout(after);
+    cmd.arg(&before).assert().success().stdout(after);
 
     Ok(())
 }
