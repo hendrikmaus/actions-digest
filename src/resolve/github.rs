@@ -94,10 +94,9 @@ impl GitHub {
 
         let reference = response.first().expect("this cannot fail");
 
-        if reference.object.obj_type == "commit" {
-            return Ok(Some(reference.object.sha.clone()));
+        match reference.object.obj_type.as_str() {
+            "commit" | "tag" => return Ok(Some(reference.object.sha.clone())),
+            _ => Ok(None)
         }
-
-        Ok(None)
     }
 }
