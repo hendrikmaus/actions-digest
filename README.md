@@ -47,7 +47,7 @@ actions-digest --github-token <PAT> workflow.yaml
 Actions digest is written in Rust. If you have its toolchain installed, you can run this command to install:
 
 ```shell
-cargo install --git 'https://github.com/hendrikmaus/actions-digest'
+cargo install --git 'https://github.com/hendrikmaus/actions-digest' --branch main
 ```
 
 _To uninstall, use `cargo uninstall <name>`._
