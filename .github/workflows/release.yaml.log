@@ -1,0 +1,6 @@
+error: hendrikmaus/custom-cache-action/save@master -> GitHub API error: error decoding response body: invalid type: map, expected a sequence at line 1 column 0
+error: hendrikmaus/custom-cache-action/restore@master -> GitHub API error: error decoding response body: invalid type: map, expected a sequence at line 1 column 0
+resolved: actions/checkout@v2 -> actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+resolved: docker/login-action@v1 -> docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+resolved: actions-rs/toolchain@v1 -> actions-rs/toolchain@568dc894a7f9e32ffd9bb7d7a6cebb784cdaa2b0
+resolved: katyo/publish-crates@v1 -> katyo/publish-crates@6ca696590b94058d4fd9b7fbe4577af32a376a42
