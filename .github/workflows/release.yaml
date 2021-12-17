@@ -1,0 +1,56 @@
+---
+name: Release
+on:
+  release:
+    types:
+      - published
+
+env:
+  CACHE_REGISTRY: ghcr.io
+  CACHE_IMAGE: ${{ github.repository }}
+  CACHE_TAG: release-cache
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  cratesio:
+    name: crates.io
+    runs-on: ubuntu-20.04
+    steps:
+      - name: CHeckout
+        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@568dc894a7f9e32ffd9bb7d7a6cebb784cdaa2b0
+        with:
+          profile: minimal
+          toolchain: stable
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.CACHE_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore cache
+        uses: hendrikmaus/custom-cache-action/restore@master
+        with:
+          registry: ${{ env.CACHE_REGISTRY }}
+          image: ${{ env.CACHE_IMAGE }}
+          tag: ${{ env.CACHE_TAG }}
+
+      - name: Publish
+        uses: katyo/publish-crates@6ca696590b94058d4fd9b7fbe4577af32a376a42
+        with:
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      - name: Save cache
+        uses: hendrikmaus/custom-cache-action/save@master
+        with:
+          paths: "${{ github.workspace }}/target /usr/share/rust/.cargo/registry/index /usr/share/rust/.cargo/registry/cache"
+          registry: ${{ env.CACHE_REGISTRY }}
+          image: ${{ env.CACHE_IMAGE }}
+          tag: ${{ env.CACHE_TAG }}
