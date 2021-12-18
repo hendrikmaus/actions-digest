@@ -19,7 +19,7 @@ jobs:
     name: crates.io
     runs-on: ubuntu-20.04
     steps:
-      - name: CHeckout
+      - name: Checkout
         uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
 
       - name: Setup Rust
@@ -50,7 +50,7 @@ jobs:
       - name: Save cache
         uses: hendrikmaus/custom-cache-action/save@master
         with:
-          paths: "${{ github.workspace }}/target /usr/share/rust/.cargo/registry/index /usr/share/rust/.cargo/registry/cache"
+          paths: "${{ github.workspace }}/target /home/runner/.cargo/registry/index /home/runner/.cargo/registry/cache"
           registry: ${{ env.CACHE_REGISTRY }}
           image: ${{ env.CACHE_IMAGE }}
           tag: ${{ env.CACHE_TAG }}
