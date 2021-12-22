@@ -17,8 +17,8 @@ on:
     tags:
       - 'v*'
     # for testing on a branch
-    branches:
-      - release-workflow
+    #branches:
+    #  - release-workflow
 
 env:
   # replace with your binary name as it appears in target/*/release
