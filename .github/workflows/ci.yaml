@@ -21,4 +21,4 @@ on:
 jobs:
   rust-workflows-ci:
     name: CI
-    uses: hendrikmaus/rust-workflows/.github/workflows/ci.yaml@allow-reuse-of-ci-workflow
+    uses: hendrikmaus/rust-workflows/.github/workflows/ci.yaml@v0.8.0
