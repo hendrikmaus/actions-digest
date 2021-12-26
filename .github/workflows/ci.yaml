@@ -1,15 +1,24 @@
 ---
+name: CI
+
 on:
   push:
     branches:
       - main
-  pull_request: {}
-
-env:
-  CARGO_TERM_COLOR: always
-
-name: Continuous integration
+      - master
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
 
 jobs:
-  rust_workflwos_ci:
+  rust-workflows-ci:
+    name: CI
     uses: hendrikmaus/rust-workflows/.github/workflows/ci.yaml@allow-reuse-of-ci-workflow
