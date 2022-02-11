@@ -1,5 +1,6 @@
 mod resolve;
 mod step;
+mod lockfile;
 
 use crate::resolve::github::GitHub;
 use crate::step::Action;
@@ -44,6 +45,9 @@ static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_P
 
 #[paw::main]
 fn main(args: Args) -> anyhow::Result<()> {
+    let lockfile = lockfile::init::Lockfile::new(args.lockfile);
+    lockfile.try_load_or_create()?;
+
     // While operating on such small files, it is more efficient to read and mutate them in memory.
     // One could also read the target line-by-line while writing each line, processed or not, back
     // to disk into a temporary file. But that would only make sense for very large data-sets.
