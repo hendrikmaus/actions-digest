@@ -10,16 +10,18 @@ use std::fs::read_to_string;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
+use clap::Parser;
 
-#[derive(structopt::StructOpt, Debug)]
-#[structopt(
+#[derive(Parser, Debug)]
+#[clap(
+    author,
+    version,
     name = "actions-digest",
-    about = "Resolve the tagged steps in your GitHub Action workflows to commit sha references",
-    global_settings = &[structopt::clap::AppSettings::ColoredHelp]
+    about = "Resolve the tagged steps in your GitHub Action workflows to commit sha references"
 )]
 struct Args {
-    #[structopt(
-        short = "t",
+    #[clap(
+        short = 't',
         long,
         help = "GitHub access token to use for increased rate-limit",
         env = "GITHUB_TOKEN"
@@ -27,8 +29,8 @@ struct Args {
     github_token: Option<String>,
 
     #[allow(dead_code)]
-    #[structopt(
-        short = "l",
+    #[clap(
+        short = 'l',
         long,
         help = "Path to the lockfile",
         env = "ACTIONS_DIGEST_LOCKFILE",
@@ -42,8 +44,9 @@ struct Args {
 
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-#[paw::main]
-fn main(args: Args) -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
+    let args = Args::parse();
+
     // While operating on such small files, it is more efficient to read and mutate them in memory.
     // One could also read the target line-by-line while writing each line, processed or not, back
     // to disk into a temporary file. But that would only make sense for very large data-sets.
