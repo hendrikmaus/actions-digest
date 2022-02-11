@@ -3,6 +3,7 @@ mod step;
 
 use crate::resolve::github::GitHub;
 use crate::step::Action;
+use clap::Parser;
 use rayon::prelude::*;
 use regex::Regex;
 use reqwest::header;
@@ -10,7 +11,6 @@ use std::fs::read_to_string;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[clap(
