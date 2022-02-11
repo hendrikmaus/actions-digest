@@ -26,6 +26,16 @@ struct Args {
     )]
     github_token: Option<String>,
 
+    #[allow(dead_code)]
+    #[structopt(
+        short = "l",
+        long,
+        help = "Path to the lockfile",
+        env = "ACTIONS_DIGEST_LOCKFILE",
+        default_value = ".actions-digest.lock"
+    )]
+    lockfile: PathBuf,
+
     /// The file to process
     file: PathBuf,
 }
