@@ -2,7 +2,7 @@
 name = "actions-digest"
 description = "Resolve GitHub Action steps from git-ref to commit-sha"
 authors = ["Hendrik Maus <aidentailor@gmail.com>"]
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 license = "MIT"
 
