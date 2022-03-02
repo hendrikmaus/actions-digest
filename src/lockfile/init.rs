@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 pub struct Lockfile {
-    pub path: PathBuf
+    pub path: PathBuf,
 }
 
 impl Lockfile {

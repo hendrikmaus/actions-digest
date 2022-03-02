@@ -1,6 +1,6 @@
+mod lockfile;
 mod resolve;
 mod step;
-mod lockfile;
 
 use crate::resolve::github::GitHub;
 use crate::step::Action;
@@ -47,7 +47,7 @@ static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_P
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    
+
     let lockfile = lockfile::init::Lockfile::new(args.lockfile);
     lockfile.try_load_or_create()?;
 
