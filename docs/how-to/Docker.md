@@ -2,7 +2,7 @@
 
 <!-- x-release-please-start-version -->
 ```shell
-docker run --rm --volume $(pwd):/srv --workdir /srv ghcr.io/hendrikmaus/actions-digest:v0.2.1 workflow.yaml
+docker run --rm --volume $(pwd):/srv --workdir /srv ghcr.io/hendrikmaus/actions-digest:v0.2.2 workflow.yaml
 ```
 <!-- x-release-please-end -->
 
