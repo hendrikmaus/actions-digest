@@ -4,6 +4,7 @@ mod lockfile;
 
 use crate::resolve::github::GitHub;
 use crate::step::Action;
+use clap::Parser;
 use rayon::prelude::*;
 use regex::Regex;
 use reqwest::header;
@@ -12,15 +13,16 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
 
-#[derive(structopt::StructOpt, Debug)]
-#[structopt(
+#[derive(Parser, Debug)]
+#[clap(
+    author,
+    version,
     name = "actions-digest",
-    about = "Resolve the tagged steps in your GitHub Action workflows to commit sha references",
-    global_settings = &[structopt::clap::AppSettings::ColoredHelp]
+    about = "Resolve the tagged steps in your GitHub Action workflows to commit sha references"
 )]
 struct Args {
-    #[structopt(
-        short = "t",
+    #[clap(
+        short = 't',
         long,
         help = "GitHub access token to use for increased rate-limit",
         env = "GITHUB_TOKEN"
@@ -28,8 +30,8 @@ struct Args {
     github_token: Option<String>,
 
     #[allow(dead_code)]
-    #[structopt(
-        short = "l",
+    #[clap(
+        short = 'l',
         long,
         help = "Path to the lockfile",
         env = "ACTIONS_DIGEST_LOCKFILE",
@@ -43,8 +45,9 @@ struct Args {
 
 static APP_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-#[paw::main]
-fn main(args: Args) -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
+    let args = Args::parse();
+    
     let lockfile = lockfile::init::Lockfile::new(args.lockfile);
     lockfile.try_load_or_create()?;
 
