@@ -29,5 +29,6 @@ LABEL org.opencontainers.image.description="Command-line utility to resolve GitH
 
 # uid 65532
 USER nonroot
-COPY ${bin_path:-"target/release/${bin}"} /usr/local/bin/app
-CMD ["/usr/local/bin/app"]
+COPY ${bin_path:-"target/release/${bin}"} /usr/local/bin/actions-digest
+ENTRYPOINT ["/usr/local/bin/actions-digest"]
+CMD ["--help"]
