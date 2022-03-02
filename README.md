@@ -10,6 +10,8 @@ A command-line utility to resolve GitHub Action steps from git-ref `actions/chec
 
 ## Usage
 
+> Please mind that `actions-digest` is in its infancy and very limited. Once run, it can currently not update the workflow files with newer versions of the steps it first digested.
+
 By default, `actions-digest` will write the data to `stdout` and its logs to `stderr`:
 
 ```shell
