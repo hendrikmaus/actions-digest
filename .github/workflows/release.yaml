@@ -14,19 +14,11 @@
 name: Release
 on:
   push:
-    tags:
-      - 'v*'
-    # for testing on a branch
-    #branches:
-    #  - release-workflow
-
+    branches:
+      - 'main'
 env:
   # replace with your binary name as it appears in target/*/release
   PROJ_NAME: actions-digest
-
-  # used for storing release caches as containers
-  CACHE_REGISTRY: ghcr.io
-  CACHE_IMAGE: ${{ github.repository }}/release-cache
 
   ## Options for containerization
 
@@ -54,8 +46,28 @@ defaults:
     shell: bash
 
 jobs:
+  release-please:
+    name: 'Release Please' # https://github.com/googleapis/release-please
+    runs-on: 'ubuntu-20.04'
+    outputs:
+      release-created: ${{ steps.release.outputs.release_created }}
+      tag-name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: 'Release Please'
+        id: release
+        uses: 'google-github-actions/release-please-action@v3'
+        with:
+          release-type: 'rust'
+          package-name: 'release-please-action'
+          bump-minor-pre-major: true
+          bump-patch-for-minor-pre-major: true
+          extra-files: |
+            docs/how-to/Docker.md
+
   binaries:
     name: Binaries
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release-created }}
     strategy:
       fail-fast: false
       matrix:
@@ -64,9 +76,21 @@ jobs:
           #   https://github.com/rust-embedded/cross#supported-targets
 
           # Linux targets; cached
-          - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest, cross: true }
-          - { target: x86_64-unknown-linux-musl, os: ubuntu-latest, cross: true }
-          - { target: aarch64-unknown-linux-musl, os: ubuntu-latest, cross: true }
+          - {
+              target: x86_64-unknown-linux-gnu,
+              os: ubuntu-latest,
+              cross: false,
+            }
+          - {
+              target: x86_64-unknown-linux-musl,
+              os: ubuntu-latest,
+              cross: true,
+            }
+          - {
+              target: aarch64-unknown-linux-musl,
+              os: ubuntu-latest,
+              cross: true,
+            }
           #- { target: i686-unknown-linux-musl, os: ubuntu-latest, cross: true }
           #- { target: arm-unknown-linux-musleabihf, os: ubuntu-latest, cross: true }
 
@@ -86,7 +110,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
 
       - uses: actions-rs/toolchain@568dc894a7f9e32ffd9bb7d7a6cebb784cdaa2b0
         with:
@@ -95,21 +119,7 @@ jobs:
           profile: minimal
           target: ${{ matrix.target }}
 
-      - name: Log in to the Container registry
-        if: runner.os == 'Linux'
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
-        with:
-          registry: ${{ env.CACHE_REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Restore cache
-        if: runner.os == 'Linux'
-        uses: hendrikmaus/custom-cache-action/restore@master
-        with:
-          registry: ${{ env.CACHE_REGISTRY }}
-          image: ${{ env.CACHE_IMAGE }}
-          tag: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v1
 
       - name: Compile
         uses: actions-rs/cargo@4ff6ec2846f6e7217c1a9b0b503506665f134c4b
@@ -152,23 +162,16 @@ jobs:
           name: ${{ env.PROJ_NAME }}-${{ matrix.target }}.zip
           path: ${{ env.PROJ_NAME }}-${{ matrix.target }}.zip
 
-      - name: Save cache
-        if: runner.os == 'Linux'
-        uses: hendrikmaus/custom-cache-action/save@master
-        with:
-          paths: "${{ github.workspace }}/target /home/runner/.cargo/registry/index /home/runner/.cargo/registry/cache"
-          registry: ${{ env.CACHE_REGISTRY }}
-          image: ${{ env.CACHE_IMAGE }}
-          tag: ${{ matrix.target }}
-
   release:
     name: GitHub Release
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: binaries
+    needs:
+      - binaries
+      - release-please
+    if: ${{ needs.release-please.outputs.release-created }}
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
         with:
           fetch-depth: 0
 
@@ -186,18 +189,21 @@ jobs:
         uses: softprops/action-gh-release@4716bde57e0fcda6ce83002e2469b8a90e560573
         with:
           files: ${{ env.PROJ_NAME }}-*/${{ env.PROJ_NAME }}-*
-          generate_release_notes: true
+          tag_name: ${{ needs.release-please.outputs.tag-name }}
 
   containerize:
     name: Containerize
-    needs: binaries
+    needs:
+      - binaries
+      - release-please
+    if: ${{ needs.release-please.outputs.release-created }}
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
 
       - name: Log in to the Container registry
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7
         with:
           registry: ${{ env.IMAGE_REGISTRY }}
           username: ${{ github.actor }}
@@ -206,8 +212,8 @@ jobs:
       - name: Binaries
         uses: actions/download-artifact@f023be2c48cc18debc3bacd34cb396e0295e2869
         with:
-          name: "${{ env.PROJ_NAME }}-${{ env.IMAGE_BINARY_TARGET }}.tar.gz"
-          path: "target/${{ env.IMAGE_BINARY_TARGET }}/release/"
+          name: '${{ env.PROJ_NAME }}-${{ env.IMAGE_BINARY_TARGET }}.tar.gz'
+          path: 'target/${{ env.IMAGE_BINARY_TARGET }}/release/'
 
       - name: Build & Push
         env:
@@ -217,18 +223,12 @@ jobs:
           tar -C "target/${IMAGE_BINARY_TARGET}/release" \
             -xvf "target/${IMAGE_BINARY_TARGET}/release/${PROJ_NAME}-${IMAGE_BINARY_TARGET}.tar.gz"
           echo "::endgroup::"
-          
+
           echo "::group::Determine image tag"
-          tag=""
-          if [[ "${GITHUB_REF}" == *"refs/tags"* ]]; then
-            tag="${IMAGE_REGISTRY}/${IMAGE_NAME}:${GITHUB_REF/refs\/tags\//}"
-          else
-            tag="${IMAGE_REGISTRY}/${IMAGE_NAME}:${GITHUB_REF/refs\/heads\//}"
-          fi
-          
+          tag="${IMAGE_REGISTRY}/${IMAGE_NAME}:${{ needs.release-please.outputs.tag-name }}"
           echo "[INFO] tag is: '${tag}'"
           echo "::endgroup::"
-          
+
           echo "::group::Container build"
           docker build \
             --tag "${tag}" \
@@ -237,18 +237,19 @@ jobs:
             --file "${GITHUB_WORKSPACE}/Dockerfile" \
             "${GITHUB_WORKSPACE}"
           echo "::endgroup::"
-          
+
           echo "::group::Container push"
           docker push "${tag}"
           echo "::endgroup::"
 
   cratesio:
     name: Publish to crates.io
-    if: startsWith(github.ref, 'refs/tags/')
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release-created }}
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
 
       - uses: actions-rs/toolchain@568dc894a7f9e32ffd9bb7d7a6cebb784cdaa2b0
         with:
@@ -256,28 +257,8 @@ jobs:
           override: true
           profile: minimal
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
-        with:
-          registry: ${{ env.CACHE_REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Restore cache
-        uses: hendrikmaus/custom-cache-action/restore@master
-        with:
-          registry: ${{ env.CACHE_REGISTRY }}
-          image: ${{ env.CACHE_IMAGE }}
-          tag: cratesio
+      - uses: Swatinem/rust-cache@v1
 
       - name: Publish to crates.io
         run: |
           cargo publish --token "${{ secrets.CARGO_REGISTRY_TOKEN }}"
-
-      - name: Save cache
-        uses: hendrikmaus/custom-cache-action/save@master
-        with:
-          paths: "${{ github.workspace }}/target /home/runner/.cargo/registry/index /home/runner/.cargo/registry/cache"
-          registry: ${{ env.CACHE_REGISTRY }}
-          image: ${{ env.CACHE_IMAGE }}
-          tag: cratesio
