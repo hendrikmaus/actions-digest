@@ -176,7 +176,7 @@ jobs:
           fetch-depth: 0
 
       - name: Binaries
-        uses: actions/download-artifact@f023be2c48cc18debc3bacd34cb396e0295e2869
+        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
 
       - name: Checksums
         run: |
@@ -210,7 +210,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Binaries
-        uses: actions/download-artifact@f023be2c48cc18debc3bacd34cb396e0295e2869
+        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
         with:
           name: '${{ env.PROJ_NAME }}-${{ env.IMAGE_BINARY_TARGET }}.tar.gz'
           path: 'target/${{ env.IMAGE_BINARY_TARGET }}/release/'
