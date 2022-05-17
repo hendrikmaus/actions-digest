@@ -1,5 +1,7 @@
 # actions-digest
 
+**:point_right: This tool has been archived. Please see [ratchet](https://github.com/sethvargo/ratchet) as a more feature-rich alternative. 👈**
+
 A command-line utility to resolve GitHub Action steps from git-ref `actions/checkout@v2` to commit-sha `actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579`, written in Rust.
 
 > **Using the commit SHA of a released action version is the safest for stability and security.**
